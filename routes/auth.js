@@ -83,6 +83,11 @@ router.get("/me", verifyToken, async (req, res) => {
 // ───────────────────────────────────────────
 // Logout
 // ───────────────────────────────────────────
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'Lax',
+};
 router.post("/logout", (req, res) => {
   res.clearCookie("token", COOKIE_OPTIONS);
   res.json({ message: "Logged out" });

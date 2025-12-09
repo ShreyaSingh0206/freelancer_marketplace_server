@@ -4,6 +4,8 @@ const stripe = require('../utils/stripe'); // Your Stripe instance
 const verifyToken = require('../middlewares/auth');
 const Gig = require('../models/Gig');
 const Order = require('../models/Order');
+const Seller = require('../models/SellerInfo');
+const Conversation = require("../models/Conversation");
 
 
 router.post('/create-checkout-session', verifyToken, async (req, res) => {
@@ -44,14 +46,25 @@ router.post('/verify-session', verifyToken, async (req, res) => {
   const { sessionId, gigId } = req.body;
 
   try {
+     
     const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    
+    console.log("Stripe session payment status:", session.payment_status);
 
     if (session.payment_status === "paid") {
       const gig = await Gig.findById(gigId);
       if (!gig) return res.status(404).json({ error: "Gig not found" });
 
       const buyerId = req.user.id;
-      const sellerId = gig.seller;
+
+      const sellerProfile = await Seller.findById(gig.seller);
+      console.log("sellerProfile:", sellerProfile);
+if (!sellerProfile) return res.status(404).json({ error: "Seller profile not found" });
+
+      const sellerId = sellerProfile.user;  
+      
+      console.log("Creating order for buyer:", buyerId, "seller:", sellerId);
 
       const existing = await Order.findOne({ gigId, buyerId });
       if (existing) return res.json({ message: "Order already exists" });
@@ -63,12 +76,29 @@ router.post('/verify-session', verifyToken, async (req, res) => {
         status: "pending",
       });
 
+      console.log("Order created:", order);
+
+       // 2. Create or fetch conversation 
+      let conversation = await Conversation.findOne({
+        participants: { $all: [buyerId, sellerId] },
+        gigId,
+      });
+
+      if (!conversation) {
+        conversation = await Conversation.create({
+          participants: [buyerId, sellerId],
+          gigId,
+        });
+      }
+
+      console.log("✅ Conversation created:", conversation);
+
       return res.json(order);
     } else {
       return res.status(400).json({ error: "Payment not completed" });
     }
   } catch (err) {
-    console.error("Session verification error:", err.message);
+    console.error("Session verification error:", err);
     res.status(500).json({ error: "Failed to verify session" });
   }
 });

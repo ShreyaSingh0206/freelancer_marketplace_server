@@ -60,6 +60,32 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Update gig by ID
+router.put('/:id', verifyToken, async (req, res) => {
+  try {
+    const updatedGig = await Gig.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedGig) {
+      return res.status(404).json({ message: "Gig not found" });
+    }
+    res.json(updatedGig);
+  } catch (err) {
+    console.error("Error updating gig:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.delete('/:id', verifyToken, async (req, res) => {
+  try {
+    const deletedGig = await Gig.findByIdAndDelete(req.params.id);
+    if (!deletedGig) {
+      return res.status(404).json({ message: "Gig not found" });
+    }
+    res.status(200).json({ message: "Gig deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting gig:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 // Export router
 module.exports = router;
