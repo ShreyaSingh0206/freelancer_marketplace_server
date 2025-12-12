@@ -18,6 +18,26 @@ router.get("/", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Failed to fetch conversations" });
   }
 });
+router.get("/seller-conversations", verifyToken, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const sellerId = req.user.id;
+
+    const conversations = await Conversation.find({
+      participants: { $in: [sellerId] },
+    })
+      .populate("participants", "name email")
+      .sort({ updatedAt: -1 });
+
+    res.status(200).json(conversations);
+  } catch (err) {
+    console.error("Error fetching seller conversations:", err);
+    res.status(500).json({ message: "Failed to fetch seller chats", error: err.message });
+  }
+});
 
 // ✅ Get single conversation by ID
 router.get("/:conversationId", verifyToken, async (req, res) => {
@@ -92,5 +112,8 @@ router.post("/create", verifyToken, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+
+
 
 module.exports = router;

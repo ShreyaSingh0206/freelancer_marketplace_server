@@ -22,13 +22,14 @@ router.get("/my-orders", verifyToken, async (req, res) => {
   try {
     const orders = await Order.find({ buyerId: req.user.id })
       .populate({
-        path: "gigId",
+         path: "gigId",
         populate: {
           path: "seller",
           model: "SellerInfo",
           populate: {
             path: "user",
             model: "User",
+            select: "_id name",
           },
         },
       });
@@ -36,6 +37,7 @@ router.get("/my-orders", verifyToken, async (req, res) => {
     const formatted = orders.map((order) => ({
       _id: order._id,
       gig: order.gigId,
+      sellerId: order.sellerId, 
     }));
 
     res.status(200).json(formatted);

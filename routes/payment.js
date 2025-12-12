@@ -73,7 +73,7 @@ if (!sellerProfile) return res.status(404).json({ error: "Seller profile not fou
         buyerId,
         sellerId,
         gigId,
-        status: "pending",
+        status: "completed",
       });
 
       console.log("Order created:", order);
