@@ -26,10 +26,13 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: [process.env.PUBLIC_URL],
-    methods: ['GET', 'POST'],
-    credentials: true,
-  },
+    origin: [
+      "http://localhost:3000",
+      "https://freelancer-marketplace-client.vercel.app"
+    ],
+    methods: ["GET", "POST"],
+    credentials: true
+  }
 });
 
 
@@ -47,7 +50,10 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
-  origin: [process.env.PUBLIC_URL],
+   origin: [
+    "http://localhost:3000",
+    "https://freelancer-marketplace-client.vercel.app"
+  ],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   credentials: true,
 }));
