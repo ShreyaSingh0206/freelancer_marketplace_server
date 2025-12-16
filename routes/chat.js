@@ -43,7 +43,7 @@ router.get("/seller-conversations", verifyToken, async (req, res) => {
 router.get("/:conversationId", verifyToken, async (req, res) => {
   try {
     const conversation = await Conversation.findById(req.params.conversationId)
-      .populate("participants", "name role");
+      .populate("participants", " _id name role");
 
     res.status(200).json(conversation);
   } catch (err) {
