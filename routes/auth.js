@@ -32,9 +32,10 @@ router.post('/register', async (req, res) => {
     const token = jwt.sign({ id: newUser._id, role: newUser.role }, JWT_SECRET, { expiresIn: '7d' });
 
     res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+       httpOnly: true,
+  secure: true,        // REQUIRED on HTTPS (Vercel + Render)
+  sameSite: "None",    // REQUIRED for cross-origin
+  maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     res.status(201).json({ message: 'Registered successfully', user: { id: newUser._id, role: newUser.role } });
@@ -57,9 +58,10 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
 
     res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+       httpOnly: true,
+  secure: true,        // REQUIRED on HTTPS (Vercel + Render)
+  sameSite: "None",    // REQUIRED for cross-origin
+  maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     res.status(200).json({ message: 'Login successful', user: { id: user._id, role: user.role } });
@@ -85,8 +87,8 @@ router.get("/me", verifyToken, async (req, res) => {
 // ───────────────────────────────────────────
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'Lax',
+    secure: true,        // SAME as login
+    sameSite: "None",
 };
 router.post("/logout", (req, res) => {
   res.clearCookie("token", COOKIE_OPTIONS);
