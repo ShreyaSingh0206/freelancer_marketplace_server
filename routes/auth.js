@@ -33,9 +33,9 @@ router.post('/register', async (req, res) => {
 
     res.cookie('token', token, {
        httpOnly: true,
-  secure: true,        // REQUIRED on HTTPS (Vercel + Render)
-  sameSite: "None",    // REQUIRED for cross-origin
-  maxAge: 7 * 24 * 60 * 60 * 1000
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(201).json({ message: 'Registered successfully', user: { id: newUser._id, role: newUser.role } });
@@ -58,10 +58,10 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
 
     res.cookie('token', token, {
-       httpOnly: true,
-  secure: true,        // REQUIRED on HTTPS (Vercel + Render)
-  sameSite: "None",    // REQUIRED for cross-origin
-  maxAge: 7 * 24 * 60 * 60 * 1000
+        httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(200).json({ message: 'Login successful', user: { id: user._id, role: user.role } });
