@@ -3,7 +3,6 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 const http = require('http');
 const { Server } = require('socket.io');
 
@@ -24,6 +23,7 @@ const app = express();
 const server = http.createServer(app);
 
 
+app.use('/api/payment', paymentWebhook);
 const io = new Server(server, {
   cors: {
     origin: [
@@ -39,7 +39,6 @@ const io = new Server(server, {
 require('./socket/socket')(io); 
 
 
-app.use('/api/payment', paymentWebhook);
 
 
 mongoose.connect(process.env.MONGO_URI)
@@ -47,7 +46,6 @@ mongoose.connect(process.env.MONGO_URI)
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 app.set("view engine", "ejs");
-app.use(express.urlencoded({ extended: true }));
 app.use(cors({
   origin: [
     "http://localhost:3000",
