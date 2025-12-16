@@ -87,8 +87,8 @@ router.get("/me", verifyToken, async (req, res) => {
 // ───────────────────────────────────────────
 const COOKIE_OPTIONS = {
   httpOnly: true,
-    secure: true,        // SAME as login
-    sameSite: "None",
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
 };
 router.post("/logout", (req, res) => {
   res.clearCookie("token", COOKIE_OPTIONS);
