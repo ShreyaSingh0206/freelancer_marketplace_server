@@ -56,7 +56,7 @@ router.post('/verify-session', verifyToken, async (req, res) => {
       const gig = await Gig.findById(gigId);
       if (!gig) return res.status(404).json({ error: "Gig not found" });
 
-      const buyerId = req.user.id;
+        const buyerId = session.metadata.userId;
 
       const sellerProfile = await Seller.findById(gig.seller);
       console.log("sellerProfile:", sellerProfile);
