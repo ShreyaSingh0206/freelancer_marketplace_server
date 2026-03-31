@@ -21,7 +21,7 @@ const router = express.Router();
 // Routes for /api/gigs/
 router
   .route('/')
-  .post(verifyToken, upload.single("thumbnail"), createGig)   // Create a gig
+  .post(verifyToken, protectSeller, upload.single("thumbnail"), createGig)   // Create a gig
   .get(getGigs);                  // List/filter gigs
 
 router.get('/category/:slug', async (req, res) => {
@@ -61,7 +61,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update gig by ID
-router.put('/:id', verifyToken, async (req, res) => {
+router.put('/:id', verifyToken, protectSeller, async (req, res) => {
   try {
     const updatedGig = await Gig.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updatedGig) {
@@ -74,7 +74,7 @@ router.put('/:id', verifyToken, async (req, res) => {
   }
 });
 
-router.delete('/:id', verifyToken, async (req, res) => {
+router.delete('/:id', verifyToken, protectSeller, async (req, res) => {
   try {
     const deletedGig = await Gig.findByIdAndDelete(req.params.id);
     if (!deletedGig) {

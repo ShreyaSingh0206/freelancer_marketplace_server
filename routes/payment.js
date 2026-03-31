@@ -6,6 +6,7 @@ const Gig = require('../models/Gig');
 const Order = require('../models/Order');
 const Seller = require('../models/SellerInfo');
 const Conversation = require("../models/Conversation");
+const User = require('../models/User');
 
 
 router.post('/create-checkout-session', verifyToken, async (req, res) => {
@@ -39,6 +40,52 @@ router.post('/create-checkout-session', verifyToken, async (req, res) => {
   } catch (err) {
     console.error("Stripe checkout error:", err);
     res.status(500).json({ error: "Failed to create checkout session" });
+  }
+});
+
+// Create subscription checkout
+router.post('/create-subscription-session', verifyToken, async (req, res) => {
+  try {
+    const { plan } = req.body;
+
+    const plans = {
+      basic: 199,
+      pro: 499,
+      premium: 999
+    };
+
+    const price = plans[plan];
+    if (!price) return res.status(400).json({ error: "Invalid plan" });
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+
+      line_items: [{
+        price_data: {
+          currency: 'inr',
+          product_data: {
+            name: `${plan} subscription`,
+          },
+          unit_amount: price * 100,
+        },
+        quantity: 1,
+      }],
+
+      success_url: `${process.env.PUBLIC_URL}/subscription-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.PUBLIC_URL}/subscribe`,
+
+      metadata: {
+        userId: req.user.id,
+        plan
+      }
+    });
+
+    res.json({ url: session.url });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Subscription session failed" });
   }
 });
 
@@ -100,6 +147,37 @@ if (!sellerProfile) return res.status(404).json({ error: "Seller profile not fou
   } catch (err) {
     console.error("Session verification error:", err);
     res.status(500).json({ error: "Failed to verify session" });
+  }
+});
+
+router.post('/verify-subscription', verifyToken, async (req, res) => {
+  const { sessionId } = req.body;
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (session.payment_status === "paid") {
+
+      const userId = session.metadata.userId;
+      const plan = session.metadata.plan;
+
+      const expiry = new Date();
+      expiry.setDate(expiry.getDate() + 30);
+
+      await User.findByIdAndUpdate(userId, {
+        isSubscribed: true,
+        subscriptionPlan: plan,
+        subscriptionExpiry: expiry
+      });
+
+      return res.json({ success: true });
+    }
+
+    res.status(400).json({ error: "Payment not completed" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Verification failed" });
   }
 });
 

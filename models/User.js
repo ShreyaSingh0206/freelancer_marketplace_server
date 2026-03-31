@@ -6,6 +6,14 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['client', 'freelancer'], required: true },
+  isSubscribed: { type: Boolean, default: false },
+  subscriptionPlan: {
+    type: String,
+    enum: ['basic', 'pro', 'premium'],
+    default: null
+  },
+  subscriptionExpiry: { type: Date, default: null }
+
 }, { timestamps: true });
 
 // Hash password before save

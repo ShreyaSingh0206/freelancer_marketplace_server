@@ -73,7 +73,7 @@ router.post('/login', async (req, res) => {
 
 router.get("/me", verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("name email avatarUrl role");
+    const user = await User.findById(req.user.id).select("name email avatarUrl role isSubscribed subscriptionPlan subscriptionExpiry");
     if (!user) return sendError(res, 404, "User not found");
 
     res.json(user);
